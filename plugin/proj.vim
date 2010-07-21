@@ -3,7 +3,8 @@
 " Description: Simple Vim project tool
 " Maintainer: Thomas Allen <thomasmallen@gmail.com>
 " ============================================================================
-let s:ProjVersion = '1.3'
+let s:ProjVersion = '1.3.1'
+
 let s:auInit = 0
 
 " Section: Core functions {{{1
@@ -177,15 +178,15 @@ function! s:RefreshCurrent()
 
   if s:auInit == 0
     let s:auInit = 1
-    au BufWritePost * silent call s:TransmitDocksend()
+    if exists('*TransmitFtpSendFile')
+      au BufWritePost * silent call s:TransmitDocksend()
+    end
   end
 endfunction
 
 function! s:TransmitDocksend()
-  if s:Current['docksend'] && exists('*TransmitFtpSendFile')
-    if match(expand('%:p:h'), s:Current['path']) == 0
-      call TransmitFtpSendFile()
-    end
+  if has_key(s:Current, 'docksend') && match(expand('%:p:h'), s:Current['path']) == 0
+    call TransmitFtpSendFile()
   end
 endfunction
 
@@ -251,7 +252,7 @@ function! s:Set(var, val)
   " Args: a:var (string), a:val (string)
   " Assigns a:val to a:var unless a:var is already defined
   if !exists(a:var)
-    exec 'let ' . a:var . ' = "' a:val . '"'
+    exec 'let ' . a:var . ' = "' . a:val . '"'
   end
 endfunction
 
