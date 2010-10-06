@@ -3,7 +3,7 @@
 " Description: Simple Vim project tool
 " Maintainer: Thomas Allen <thomasmallen@gmail.com>
 " ============================================================================
-let s:ProjVersion = '1.4'
+let s:ProjVersion = '1.5'
 
 let s:auInit = 0
 
@@ -101,9 +101,28 @@ function! s:GetProject(name)
   end
 endfunction
 
-function! s:OpenProject(name)
-  if(s:GetProject(a:name))
-    call s:RefreshCurrent()
+function! s:OpenProjectTab(name)
+  let t:ProjCurrent = a:name
+  let t:oldCwd = getcwd()
+  call s:OpenProject(a:name, 1)
+endfunction
+
+function! s:OnTabEnter()
+  if exists('t:ProjCurrent')
+    let t:oldCwd = getcwd()
+    call s:OpenProject(t:ProjCurrent, 0)
+  end
+endfunction
+
+function! s:OnTabLeave()
+  if exists('t:oldCwd')
+    exec 'cd ' . t:oldCwd
+  end
+endfunction
+
+function! s:OpenProject(name, rBrowser)
+  if s:GetProject(a:name)
+    call s:RefreshCurrent(a:rBrowser)
   end
 endfunction
 
@@ -111,11 +130,16 @@ function! s:IsOpen()
   return exists('s:Current')
 endfunction
 
-function! s:RefreshCurrent()
+function! s:ChangeDirectory()
+  if has_key(s:Current, 'path') == 1
+    exec 'cd ' . s:Current['path']
+  end
+  return s:Current['path']
+endfunction
+
+function! s:RefreshCurrent(rBrowser)
   if s:IsOpen()
-    if has_key(s:Current, 'path') == 1
-      exec 'cd ' . s:Current['path']
-    end
+    call s:ChangeDirectory()
 
     if has_key(s:Current, 'vim') == 1
       exec 'so ' . s:Current['vim']
@@ -128,7 +152,7 @@ function! s:RefreshCurrent()
         else
           echo 'Browser disabled'
         end
-      else
+      elseif a:rBrowser
         exec g:ProjFileBrowser
       end
     else
@@ -138,6 +162,8 @@ function! s:RefreshCurrent()
 
   if s:auInit == 0
     let s:auInit = 1
+    au TabEnter * silent call s:OnTabEnter()
+    au TabLeave * silent call s:OnTabLeave()
     if exists('*TransmitFtpSendFile')
       au BufWritePost * silent call s:TransmitDocksend()
     end
@@ -215,14 +241,15 @@ call s:Set('g:ProjSplitMethod', 'vsp')
 call s:Set('g:ProjDisableMappings', 0)
 call s:Set('g:ProjMapLeader', '<Leader>p')
 
-call s:Set('g:ProjAddMap',    g:ProjMapLeader . 'a')
-call s:Set('g:ProjFileMap',   g:ProjMapLeader . 'f')
-call s:Set('g:ProjInfoMap',   g:ProjMapLeader . 'i')
-call s:Set('g:ProjMenuMap',   g:ProjMapLeader . 'm')
-call s:Set('g:ProjNotesMap',  g:ProjMapLeader . 'n')
-call s:Set('g:ProjOpenMap',   g:ProjMapLeader . 'o')
-call s:Set('g:ProjReloadMap', g:ProjMapLeader . 'r')
-call s:Set('g:ProjVimMap',    g:ProjMapLeader . 'v')
+call s:Set('g:ProjAddMap',     g:ProjMapLeader . 'a')
+call s:Set('g:ProjFileMap',    g:ProjMapLeader . 'f')
+call s:Set('g:ProjInfoMap',    g:ProjMapLeader . 'i')
+call s:Set('g:ProjMenuMap',    g:ProjMapLeader . 'm')
+call s:Set('g:ProjNotesMap',   g:ProjMapLeader . 'n')
+call s:Set('g:ProjOpenMap',    g:ProjMapLeader . 'o')
+call s:Set('g:ProjOpenTabMap', g:ProjMapLeader . 't')
+call s:Set('g:ProjReloadMap',  g:ProjMapLeader . 'r')
+call s:Set('g:ProjVimMap',     g:ProjMapLeader . 'v')
 
 call s:LoadProjectsRaw()
 
@@ -241,6 +268,7 @@ function! s:PromptMenu()
                    \." (i)nfo\n"
                    \." (n)otes\n"
                    \." (o)pen\n"
+                   \." (t)ab open\n"
                    \." (r)eload\n"
                    \." (v)im\n"
                    \."? ")
@@ -264,7 +292,14 @@ endfunction
 function! s:PromptOpen()
   let name = input('Open: ', '', 'customlist,g:ProjComplete')
   if len(name)
-    call s:OpenProject(name)
+    call s:OpenProject(name, 1)
+  end
+endfunction
+
+function! s:PromptOpenTab()
+  let name = input('Open Tab: ', '', 'customlist,g:ProjComplete')
+  if len(name)
+    call s:OpenProjectTab(name)
   end
 endfunction
 
@@ -276,14 +311,15 @@ function! s:PromptAdd()
 endfunction
 
 if g:ProjDisableMappings != 1
-  call s:NormalMap(g:ProjAddMap,    ':ProjAdd<CR>')
-  call s:NormalMap(g:ProjFileMap,   ':ProjFile<CR>')
-  call s:NormalMap(g:ProjInfoMap,   ':ProjInfo<CR>')
-  call s:NormalMap(g:ProjMenuMap,   ':ProjMenu<CR>')
-  call s:NormalMap(g:ProjNotesMap,  ':ProjNotes<CR>')
-  call s:NormalMap(g:ProjOpenMap,   ':ProjOpen<CR>')
-  call s:NormalMap(g:ProjReloadMap, ':ProjReload<CR>')
-  call s:NormalMap(g:ProjVimMap,    ':ProjVim<CR>')
+  call s:NormalMap(g:ProjAddMap,     ':ProjAdd<CR>')
+  call s:NormalMap(g:ProjFileMap,    ':ProjFile<CR>')
+  call s:NormalMap(g:ProjInfoMap,    ':ProjInfo<CR>')
+  call s:NormalMap(g:ProjMenuMap,    ':ProjMenu<CR>')
+  call s:NormalMap(g:ProjNotesMap,   ':ProjNotes<CR>')
+  call s:NormalMap(g:ProjOpenMap,    ':ProjOpen<CR>')
+  call s:NormalMap(g:ProjOpenTabMap, ':ProjOpenTab<CR>')
+  call s:NormalMap(g:ProjReloadMap,  ':ProjReload<CR>')
+  call s:NormalMap(g:ProjVimMap,     ':ProjVim<CR>')
 end
 
 function! g:ProjComplete(A, L, P)
@@ -293,13 +329,14 @@ function! g:ProjComplete(A, L, P)
 endfunction
 
 
-command! -complete=customlist,g:ProjComplete -nargs=1 Proj :call s:OpenProject('<args>')
+command! -complete=customlist,g:ProjComplete -nargs=1 Proj :call s:OpenProject('<args>', 1)
 command! ProjAdd     :call s:PromptAdd()
 command! ProjFile    :call s:OpenFile()
 command! ProjInfo    :call s:DumpInfo()
 command! ProjMenu    :call s:PromptMenu()
 command! ProjNotes   :call s:OpenNotes()
 command! ProjOpen    :call s:PromptOpen()
+command! ProjOpenTab :call s:PromptOpenTab()
 command! ProjRefresh :call s:RefreshCurrent()
 command! ProjReload  :call s:LoadProjects()
 command! ProjVim     :call s:OpenVimFile()
