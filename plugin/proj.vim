@@ -3,7 +3,7 @@
 " Description: Simple Vim project tool
 " Maintainer: Thomas Allen <thomasmallen@gmail.com>
 " ============================================================================
-let s:ProjVersion = '1.5'
+let s:ProjVersion = '1.5.1'
 
 let s:auInit = 0
 
@@ -284,6 +284,8 @@ function! s:PromptMenu()
     call s:PromptOpen()
   elseif choice == 'r'
     call s:LoadProjects()
+  elseif choice == 't'
+    call s:PromptOpenTab()
   elseif choice == 'v'
     call s:OpenVimFile()
   end

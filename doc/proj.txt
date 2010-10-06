@@ -88,6 +88,6 @@ Global Options:
         g:ProjMenuMap (default: 'm') - Calls :ProjMenu
         g:ProjNotesMap (default: 'n') - Calls :ProjNotes
         g:ProjOpenMap (default: 'o') - Calls :ProjOpen
-        g:ProjOpenTabMap (default: 'p') - Calls :ProjOpen
+        g:ProjOpenTabMap (default: 't') - Calls :ProjOpen
         g:ProjReloadMap (default: 'r') - Calls :ProjReload
         g:ProjVim (default: 'v') - Calls :ProjVim
