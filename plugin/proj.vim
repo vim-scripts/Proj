@@ -1,10 +1,9 @@
 " ============================================================================
 " File: proj.vim
 " Description: Simple Vim project tool
-" Maintainer: Thomas Allen <thomasmallen@gmail.com>
+" Maintainer: Thomas Allen <thomas@oinksoft.com>
+" Version: 1.5.2
 " ============================================================================
-let s:ProjVersion = '1.5.1'
-
 let s:auInit = 0
 
 function! s:echo(msg)
@@ -292,14 +291,14 @@ function! s:PromptMenu()
 endfunction
 
 function! s:PromptOpen()
-  let name = input('Open: ', '', 'customlist,g:ProjComplete')
+  let name = input('Open: ', '', 'customlist,ProjComplete')
   if len(name)
     call s:OpenProject(name, 1)
   end
 endfunction
 
 function! s:PromptOpenTab()
-  let name = input('Open Tab: ', '', 'customlist,g:ProjComplete')
+  let name = input('Open Tab: ', '', 'customlist,ProjComplete')
   if len(name)
     call s:OpenProjectTab(name)
   end
@@ -324,14 +323,14 @@ if g:ProjDisableMappings != 1
   call s:NormalMap(g:ProjVimMap,     ':ProjVim<CR>')
 end
 
-function! g:ProjComplete(A, L, P)
+function! ProjComplete(A, L, P)
   if(exists('g:Projects'))
     return filter(keys(g:Projects), 'v:val =~ "^' . a:A . '"')
   end
 endfunction
 
 
-command! -complete=customlist,g:ProjComplete -nargs=1 Proj :call s:OpenProject('<args>', 1)
+command! -complete=customlist,ProjComplete -nargs=1 Proj :call s:OpenProject('<args>', 1)
 command! ProjAdd     :call s:PromptAdd()
 command! ProjFile    :call s:OpenFile()
 command! ProjInfo    :call s:DumpInfo()

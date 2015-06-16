@@ -2,8 +2,6 @@ This is a mirror of http://www.vim.org/scripts/script.php?script_id=2719
 
 Proj lets you save settings for your project in a simple file.
 
-http://github.com/tmallen/proj-vim
-
 Commands:
     Note that the easiest way to use Proj is with the key mappings bound 
     to the commands below. <Leader>pt is the default mapping to open a 
